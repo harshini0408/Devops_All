@@ -162,6 +162,8 @@ Log in to Jenkins.
 7. Enter the following script:
 
 ```groovy
+
+
 pipeline {
     agent any
 
@@ -169,17 +171,26 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/harshini0408/Jenkins-CI-Demo.git'
+                url: 'YOUR_GITHUB_REPOSITORY_URL'
             }
         }
 
-        stage('Build and Test') {
+        stage('Compile') {
             steps {
-                sh 'mvn clean test'
+                sh 'javac Main.java'
+            }
+        }
+
+        stage('Execute') {
+            steps {
+                sh 'java Main'
             }
         }
     }
 }
+
+
+
 ```
 
 8. Click Save.
