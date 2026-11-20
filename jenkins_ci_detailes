@@ -1,0 +1,789 @@
+# EXPERIMENT 4: Creation and Execution of CI Pipeline Using Jenkins
+
+## AIM
+To create and configure a Continuous Integration (CI) pipeline using Jenkins to automate the building and testing of a Java application using Maven, JUnit and GitHub.
+
+## SOFTWARE REQUIREMENTS
+- Ubuntu 22.04
+- Java JDK 17
+- Jenkins
+- IntelliJ IDEA
+- Maven
+- Git and GitHub
+
+---
+
+# PART 1: INSTALLATION AND CONFIGURATION
+
+### Step 1: Update Ubuntu
+
+Open Terminal:
+
+```bash
+sudo apt update
+```
+
+### Step 2: Install Java
+
+Install Java 17 for the Maven project:
+
+```bash
+sudo apt install openjdk-17-jdk -y
+```
+
+Verify:
+
+```bash
+java -version
+javac -version
+```
+
+**Important:** Jenkins 2.580.2 requires Java 21 or newer to run. If your Jenkins already runs on Java 21, keep it that way. Java 17 can be used separately for compiling the project.
+
+### Step 3: Install Git and Maven
+
+```bash
+sudo apt install git maven -y
+```
+
+Verify:
+
+```bash
+git --version
+mvn -version
+```
+
+### Step 4: Start Jenkins
+
+```bash
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+```
+
+Open browser:
+
+```text
+http://localhost:8080
+```
+
+Log in to Jenkins.
+
+---
+
+# PART 2: CREATE JAVA MAVEN PROJECT
+
+### Step 5: Create Project in IntelliJ IDEA
+
+1. Open IntelliJ IDEA.
+2. Select New Project.
+3. Select Java.
+4. Select Maven as the build system.
+5. Enter project name: `Jenkins-CI-Demo`.
+6. Select JDK 17.
+7. Click Create.
+
+### Step 6: Create Calculator.java
+
+Inside `src/main/java/com/example`, create:
+
+**Filename: Calculator.java**
+
+```java
+package com.example;
+
+public class Calculator {
+
+    public int add(int a, int b) {
+        return a + b;
+    }
+}
+```
+
+### Step 7: Create CalculatorTest.java
+
+Inside `src/test/java/com/example`, create:
+
+**Filename: CalculatorTest.java**
+
+```java
+package com.example;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CalculatorTest {
+
+    @Test
+    void testAddition() {
+
+        Calculator c = new Calculator();
+
+        assertEquals(5, c.add(2, 3));
+    }
+}
+```
+
+### Step 8: Configure pom.xml
+
+Replace the contents of `pom.xml` with:
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>Jenkins-CI-Demo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+### Step 9: Verify Project Structure
+
+Your project should look like this:
+
+```text
+Jenkins-CI-Demo/
+│
+├── pom.xml
+│
+└── src/
+    ├── main/
+    │   └── java/
+    │       └── com/example/
+    │           └── Calculator.java
+    │
+    └── test/
+        └── java/
+            └── com/example/
+                └── CalculatorTest.java
+```
+
+### Step 10: Execute Maven Test
+
+Open IntelliJ Terminal:
+
+```bash
+mvn clean test
+```
+
+Expected:
+
+```text
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+BUILD SUCCESS
+```
+
+If IntelliJ shows dependency errors, click **Maven → Reload All Maven Projects**.
+
+---
+
+# PART 3: UPLOAD PROJECT TO GITHUB
+
+### Step 11: Create GitHub Repository
+
+1. Open GitHub.
+2. Create a repository named `Jenkins-CI-Demo`.
+3. Select Public.
+4. Create Repository.
+
+### Step 12: Push Project to GitHub
+
+Open IntelliJ Terminal inside the project directory:
+
+```bash
+git config --global user.name "Harshini"
+git config --global user.email "YOUR_EMAIL"
+```
+
+Initialize Git:
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+```
+
+Connect GitHub:
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/Jenkins-CI-Demo.git
+```
+
+Push:
+
+```bash
+git push -u origin main
+```
+
+Replace `YOUR_USERNAME` and `YOUR_EMAIL` with your details.
+
+---
+
+# PART 4: CONFIGURE JENKINS CI PIPELINE
+
+### Step 13: Install Required Jenkins Plugins
+
+Go to:
+
+**Manage Jenkins → Plugins → Available plugins**
+
+Search and install:
+
+1. Git plugin
+2. Pipeline plugin
+
+Restart Jenkins:
+
+```bash
+sudo systemctl restart jenkins
+```
+
+If these plugins are already installed, skip this step.
+
+### Step 14: Configure Maven in Jenkins
+
+1. Open Manage Jenkins.
+2. Click Tools.
+3. Find Maven installations.
+4. Click Add Maven.
+5. Name:
+
+```text
+Maven
+```
+
+6. Select Install automatically, if available.
+7. Save.
+
+Alternatively, use the system-installed Maven by adding its executable directory to the Jenkins PATH.
+
+### Step 15: Create Jenkins Pipeline
+
+1. Open Jenkins Dashboard.
+2. Click New Item.
+3. Enter:
+
+```text
+Jenkins-CI-Demo
+```
+
+4. Select **Pipeline**.
+5. Click OK.
+6. Scroll to Pipeline.
+7. Select **Pipeline script**.
+
+### Step 16: Enter Pipeline Script
+
+Paste the following script:
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/YOUR_USERNAME/Jenkins-CI-Demo.git'
+            }
+        }
+
+        stage('Build and Test') {
+            steps {
+                sh 'mvn clean test'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'BUILD SUCCESSFUL'
+        }
+
+        failure {
+            echo 'BUILD FAILED'
+        }
+    }
+}
+```
+
+Replace the repository URL with your GitHub repository URL.
+
+Click Save.
+
+### Step 17: Execute Pipeline
+
+1. Open Jenkins-CI-Demo.
+2. Click Build Now.
+3. Open the latest build.
+4. Click Console Output.
+
+Expected:
+
+```text
+BUILD SUCCESS
+Finished: SUCCESS
+```
+
+The pipeline performs:
+
+1. Checkout – Retrieves source code from GitHub.
+2. Build and Test – Compiles the Java application and executes JUnit tests.
+
+---
+
+# PART 5: AUTOMATIC BUILD TRIGGER
+
+### Step 18: Configure Poll SCM
+
+1. Open Jenkins-CI-Demo.
+2. Click Configure.
+3. Under Build Triggers, select **Poll SCM**.
+4. Enter:
+
+```text
+H/2 * * * *
+```
+
+5. Click Save.
+
+Jenkins checks GitHub periodically for new commits.
+
+### Step 19: Test Automatic Build
+
+Modify `Calculator.java`:
+
+```java
+package com.example;
+
+public class Calculator {
+
+    public int add(int a, int b) {
+        return a + b;
+    }
+
+    public int subtract(int a, int b) {
+        return a - b;
+    }
+}
+```
+
+Push changes:
+
+```bash
+git add .
+git commit -m "Updated calculator"
+git push origin main
+```
+
+Wait for Jenkins to detect the change.
+
+Open Jenkins → Build History → Latest Build → Console Output.
+
+Verify:
+
+```text
+BUILD SUCCESS
+Finished: SUCCESS
+```
+
+---
+
+# PART 6: TEST BUILD FAILURE
+
+### Step 20: Introduce an Error
+
+Modify `CalculatorTest.java`:
+
+```java
+package com.example;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CalculatorTest {
+
+    @Test
+    void testAddition() {
+
+        Calculator c = new Calculator();
+
+        assertEquals(56, c.add(28, 2));
+    }
+}
+```
+
+Actual result = 30  
+Expected result = 56.
+
+### Step 21: Push Incorrect Code
+
+```bash
+git add .
+git commit -m "Introduce test failure"
+git push origin main
+```
+
+Wait for Jenkins or click Build Now.
+
+Expected output:
+
+```text
+Tests run: 1, Failures: 1
+
+BUILD FAILURE
+Finished: FAILURE
+```
+
+### Step 22: Correct the Error
+
+Change:
+
+```java
+assertEquals(56, c.add(28, 2));
+```
+
+To:
+
+```java
+assertEquals(30, c.add(28, 2));
+```
+
+Push corrected code:
+
+```bash
+git add .
+git commit -m "Fix test failure"
+git push origin main
+```
+
+Wait for Jenkins to execute the pipeline again.
+
+Expected:
+
+```text
+Tests run: 1, Failures: 0
+
+BUILD SUCCESS
+Finished: SUCCESS
+```
+
+---
+
+# PART 7: COMMON ERRORS AND SOLUTIONS
+
+These are the errors encountered during execution and their solutions.
+
+### Error 1: JUnit dependency not found
+
+Error:
+
+```text
+Dependency org.junit.jupiter:junit-jupiter:5.10.2 not found
+```
+
+Solution:
+
+```bash
+cd ~/IdeaProjects/Jenkins-CI-Demo
+
+mvn -U clean test
+```
+
+In IntelliJ, click:
+
+**Maven → Reload All Maven Projects**
+
+Check internet connectivity:
+
+```bash
+ping -c 4 repo.maven.apache.org
+```
+
+### Error 2: No tests to run
+
+Error:
+
+```text
+No tests to run
+```
+
+Solution:
+
+Check the file location:
+
+```text
+src/test/java/com/example/CalculatorTest.java
+```
+
+Check that:
+- The class name ends with `Test`.
+- The method has `@Test`.
+- The package declaration is correct.
+- JUnit dependency exists in `pom.xml`.
+
+Execute:
+
+```bash
+mvn clean test
+```
+
+### Error 3: Pipeline option not visible
+
+Cause: Pipeline plugin is missing.
+
+Solution:
+
+1. Manage Jenkins → Plugins.
+2. Search `Pipeline`.
+3. Install Pipeline plugin.
+4. Restart Jenkins.
+
+```bash
+sudo systemctl restart jenkins
+```
+
+### Error 4: No such DSL method 'git'
+
+Error:
+
+```text
+No such DSL method 'git'
+```
+
+Cause: Jenkins Git plugin is missing or not enabled.
+
+Solution:
+
+1. Manage Jenkins → Plugins.
+2. Install Git plugin.
+3. Restart Jenkins.
+
+```bash
+sudo systemctl restart jenkins
+```
+
+### Error 5: Main.java not found
+
+Error:
+
+```text
+error: file not found: Main.java
+```
+
+Cause: Using `javac Main.java` for a Maven project.
+
+Solution:
+
+Replace:
+
+```groovy
+sh 'javac Main.java'
+sh 'java Main'
+```
+
+With:
+
+```groovy
+sh 'mvn clean test'
+```
+
+### Error 6: Maven command not found in Jenkins
+
+Error:
+
+```text
+mvn: not found
+```
+
+Solution:
+
+```bash
+sudo apt install maven -y
+sudo systemctl restart jenkins
+```
+
+Check:
+
+```bash
+sudo -u jenkins mvn -version
+```
+
+If it still fails, configure Maven under **Manage Jenkins → Tools**, or configure the Jenkins PATH to include `/usr/bin`.
+
+### Error 7: Jenkins plugin update error
+
+Error:
+
+```text
+UnknownHostException: updates.jenkins.io
+```
+
+Check:
+
+```bash
+ping -c 4 google.com
+ping -c 4 updates.jenkins.io
+```
+
+Check HTTPS connectivity:
+
+```bash
+curl -I https://updates.jenkins.io/update-center.json
+```
+
+If connectivity works, restart Jenkins and refresh the plugin page.
+
+### Error 8: Invalid Jenkins username or password
+
+If you forget your Jenkins password:
+
+1. Stop Jenkins.
+2. Back up `/var/lib/jenkins/config.xml`.
+3. Temporarily disable security using `useSecurity=false`.
+4. Restart Jenkins.
+5. Access the dashboard locally.
+6. Re-enable security and create a new administrator account.
+7. Disable public signup and verify login.
+
+**Never leave Jenkins unsecured or accessible to other machines while security is disabled.**
+
+---
+
+# PART 8: FINAL VERIFICATION
+
+| Test | Expected Result |
+|---|---|
+| Initial pipeline execution | SUCCESS |
+| GitHub code modification | Automatic build |
+| Incorrect JUnit assertion | FAILURE |
+| Corrected JUnit assertion | SUCCESS |
+
+## RESULT
+
+Thus, a Continuous Integration pipeline was successfully created using Jenkins, Maven, JUnit and GitHub. The pipeline automatically checked out the source code, compiled the Java application, executed test cases, detected build failures and successfully rebuilt the application after corrections.
+
+# PART 9: COMMON PIPELINE SCRIPT FOR FUTURE EXPERIMENTS
+
+You can reuse the following pipeline for **any Java project structured as a Maven project**, including Calculator, Prime Number, Palindrome, Factorial and Fibonacci.
+
+Only change the GitHub repository URL.
+
+### Generic Jenkins Pipeline Script
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'YOUR_GITHUB_REPOSITORY_URL'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo 'BUILD SUCCESS'
+        }
+
+        failure {
+            echo 'BUILD FAILURE'
+        }
+    }
+}
+```
+
+### What changes for each experiment?
+
+| Experiment | Java program | Pipeline |
+|---|---|---|
+| Experiment 4 | Calculator | Same |
+| Q11 | Palindrome | Same |
+| Q12 | Prime | Same |
+| Q13 | Factorial | Same |
+| Q14 | Fibonacci | Same |
+
+**Important conditions:**
+- Every project must have a `pom.xml`.
+- Java source files must be inside `src/main/java`.
+- JUnit test files must be inside `src/test/java`.
+- The GitHub repository must contain the complete Maven project.
+- For Q12, enable Poll SCM.
+- For programs requiring keyboard input, provide automated test inputs instead of expecting Jenkins to accept interactive keyboard input.
+
+### Final Commands to Remember
+
+```bash
+# Run project
+mvn clean test
+
+# Git commands
+git add .
+git commit -m "Updated code"
+git push origin main
+
+# Restart Jenkins
+sudo systemctl restart jenkins
+
+# Check Jenkins
+sudo systemctl status jenkins
+```
+
+**My recommendation:** Keep this Experiment 4 procedure as your master Jenkins CI procedure. For Experiments 11–14, reuse the same Maven project structure and pipeline, replacing the Calculator logic and its JUnit test cases with the respective program. This avoids configuring Jenkins repeatedly.
