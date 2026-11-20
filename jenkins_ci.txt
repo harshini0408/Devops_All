@@ -1,0 +1,268 @@
+## AIM
+To create and configure a Continuous Integration (CI) pipeline using Jenkins to automate the building and testing of a software project.
+
+## PROCEDURE
+
+### Step 1: Install required packages in Ubuntu
+
+```bash
+sudo apt update
+sudo apt install git maven -y
+```
+
+Verify installations:
+
+```bash
+java -version
+mvn -version
+git --version
+```
+
+### Step 2: Create Maven Project in IntelliJ IDEA
+
+1. Open IntelliJ IDEA → New Project.
+2. Select Java and Maven.
+3. Project name: `Jenkins-CI-Demo`.
+4. Select JDK 17.
+5. Click Create.
+
+### Step 3: Create Calculator.java
+
+Create `Calculator.java` inside `src/main/java`.
+
+```java
+public class Calculator {
+    public int add(int a, int b) {
+        return a + b;
+    }
+}
+```
+
+### Step 4: Configure pom.xml
+
+Replace the contents of `pom.xml` with:
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>Jenkins-CI-Demo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+### Step 5: Create CalculatorTest.java
+
+Create `CalculatorTest.java` inside `src/test/java`.
+
+```java
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CalculatorTest {
+
+    @Test
+    void testAddition() {
+        Calculator calculator = new Calculator();
+        assertEquals(5, calculator.add(2, 3));
+    }
+}
+```
+
+### Step 6: Execute Maven Test
+
+Open IntelliJ Terminal:
+
+```bash
+mvn clean test
+```
+
+Expected output:
+
+```text
+Tests run: 1, Failures: 0
+BUILD SUCCESS
+```
+
+### Step 7: Create GitHub Repository
+
+1. Open GitHub.
+2. Create a public repository named `Jenkins-CI-Demo`.
+3. Open IntelliJ Terminal inside the project directory.
+
+Execute:
+
+```bash
+git config --global user.name "Harshini"
+git config --global user.email "24z158@psgitech.ac.in"
+
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+
+git remote add origin https://github.com/harshini0408/Jenkins-CI-Demo.git
+
+git push -u origin main
+```
+
+### Step 8: Start Jenkins
+
+Open Ubuntu Terminal:
+
+```bash
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+```
+
+Open browser:
+
+```text
+http://localhost:8080
+```
+
+Log in to Jenkins.
+
+### Step 9: Create Jenkins Pipeline
+
+1. Click **New Item**.
+2. Enter `Jenkins-CI-Demo`.
+3. Select **Pipeline**.
+4. Click OK.
+5. Scroll to Pipeline section.
+6. Select **Pipeline script**.
+7. Enter the following script:
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/harshini0408/Jenkins-CI-Demo.git'
+            }
+        }
+
+        stage('Build and Test') {
+            steps {
+                sh 'mvn clean test'
+            }
+        }
+    }
+}
+```
+
+8. Click Save.
+
+### Step 10: Execute Pipeline
+
+1. Open the Jenkins job.
+2. Click **Build Now**.
+3. Open the latest build.
+4. Click **Console Output**.
+5. Verify:
+
+```text
+BUILD SUCCESS
+Finished: SUCCESS
+```
+
+### Step 11: Enable Poll SCM
+
+1. Open Configure.
+2. Under Build Triggers, select **Poll SCM**.
+3. Enter the schedule:
+
+```text
+H/2 * * * *
+```
+
+4. Click Save.
+
+### Step 12: Test Build Failure
+
+Modify `CalculatorTest.java`:
+
+```java
+assertEquals(56, calculator.add(28, 2));
+```
+
+Push the changes:
+
+```bash
+git add .
+git commit -m "Introduce test failure"
+git push origin main
+```
+
+Wait for Jenkins to detect the changes or click Build Now.
+
+Check Console Output. Expected:
+
+```text
+BUILD FAILURE
+Finished: FAILURE
+```
+
+### Step 13: Correct the Test
+
+Change the expected result from 56 to 30:
+
+```java
+assertEquals(30, calculator.add(28, 2));
+```
+
+Push the corrected code:
+
+```bash
+git add .
+git commit -m "Fix test case"
+git push origin main
+```
+
+Wait for Jenkins to detect the changes.
+
+Check Console Output.
+
+Expected:
+
+```text
+BUILD SUCCESS
+Finished: SUCCESS
+```
+
+## RESULT
+
+Thus, the Jenkins CI pipeline was successfully created and tested, demonstrating automatic build execution, failure detection, and successful rebuilding after code correction.
+
+**Note:** Jenkins itself must run using Java 21 or newer. The Maven project can use Java 17.
