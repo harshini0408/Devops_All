@@ -1,0 +1,450 @@
+# EXPERIMENT 8: Install Ansible, Configure Ansible Roles and Write Playbooks
+
+**Date:**
+
+## AIM
+
+To install Ansible, configure Ansible roles, and create and execute playbooks to automate the installation of Git, PostgreSQL and Apache web server on Ubuntu.
+
+## PROCEDURE
+
+### Step 1: Verify Ansible installation
+
+Open Ubuntu Terminal using `Ctrl + Alt + T`.
+
+Execute:
+
+```bash
+ansible --version
+```
+
+This displays the installed Ansible version.
+
+### Step 2: Create the project directory
+
+Execute the following commands:
+
+```bash
+mkdir -p ~/ansible-roles-lab
+cd ~/ansible-roles-lab
+mkdir roles
+cd roles
+```
+
+This creates a project directory named `ansible-roles-lab` and a subdirectory named `roles`.
+
+### Step 3: Create three Ansible roles
+
+Execute these commands inside `~/ansible-roles-lab/roles/`:
+
+```bash
+ansible-galaxy init prerequisites
+ansible-galaxy init postgresql
+ansible-galaxy init apache
+```
+
+Expected output:
+
+```text
+- Role prerequisites was created successfully
+- Role postgresql was created successfully
+- Role apache was created successfully
+```
+
+These commands create three roles with standard directory structures.
+
+### Step 4: Configure the prerequisites role
+
+**File: `roles/prerequisites/tasks/main.yml`**
+
+Execute:
+
+```bash
+cd ~/ansible-roles-lab/roles/prerequisites/tasks
+nano main.yml
+```
+
+Enter the following code:
+
+```yaml
+---
+- name: Install Git
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: false
+```
+
+**Purpose:** Installs Git using the Ansible APT module.
+
+Save using `Ctrl + O`, Enter and `Ctrl + X`.
+
+### Step 5: Configure the PostgreSQL role
+
+**File: `roles/postgresql/tasks/main.yml`**
+
+Execute:
+
+```bash
+cd ~/ansible-roles-lab/roles/postgresql/tasks
+nano main.yml
+```
+
+Enter the following code:
+
+```yaml
+---
+- name: Install PostgreSQL
+  ansible.builtin.apt:
+    name: postgresql
+    state: present
+    update_cache: false
+
+- name: Start and enable PostgreSQL
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+```
+
+**Purpose:** Installs PostgreSQL and starts the database service. It also enables automatic startup during system boot.
+
+Save using `Ctrl + O`, Enter and `Ctrl + X`.
+
+### Step 6: Configure the Apache role
+
+**File: `roles/apache/tasks/main.yml`**
+
+Execute:
+
+```bash
+cd ~/ansible-roles-lab/roles/apache/tasks
+nano main.yml
+```
+
+Enter the following code:
+
+```yaml
+---
+- name: Install Apache web server
+  ansible.builtin.apt:
+    name: apache2
+    state: present
+    update_cache: false
+
+- name: Start and enable Apache
+  ansible.builtin.service:
+    name: apache2
+    state: started
+    enabled: true
+```
+
+**Purpose:** Installs Apache and starts the web server.
+
+Save using `Ctrl + O`, Enter and `Ctrl + X`.
+
+### Step 7: Create the main Ansible playbook
+
+**File: `stack.yml`**
+
+Navigate to the main project directory:
+
+```bash
+cd ~/ansible-roles-lab
+```
+
+Create the playbook:
+
+```bash
+nano stack.yml
+```
+
+Enter the following code:
+
+```yaml
+---
+- name: Configure Web Application Infrastructure
+  hosts: localhost
+  connection: local
+  become: true
+
+  roles:
+    - prerequisites
+    - postgresql
+    - apache
+```
+
+**Purpose:**
+
+- `hosts: localhost` specifies the local Ubuntu machine.
+- `connection: local` executes tasks locally without SSH.
+- `become: true` enables administrator privileges.
+- `roles` specifies the three roles to be executed.
+
+The roles execute in the following order:
+
+1. prerequisites – Installs Git.
+2. postgresql – Installs PostgreSQL.
+3. apache – Installs Apache.
+
+Save using `Ctrl + O`, Enter and `Ctrl + X`.
+
+### Step 8: Verify the directory structure
+
+Execute:
+
+```bash
+cd ~/ansible-roles-lab
+tree
+```
+
+Expected structure:
+
+```text
+ansible-roles-lab/
+│
+├── stack.yml
+│
+└── roles/
+    ├── prerequisites/
+    │   └── tasks/
+    │       └── main.yml
+    │
+    ├── postgresql/
+    │   └── tasks/
+    │       └── main.yml
+    │
+    └── apache/
+        └── tasks/
+            └── main.yml
+```
+
+Other automatically generated role directories will also be present.
+
+### Step 9: Check the playbook syntax
+
+Execute:
+
+```bash
+ansible-playbook -i localhost, stack.yml --syntax-check
+```
+
+Expected output:
+
+```text
+playbook: stack.yml
+```
+
+This confirms that the playbook syntax is correct.
+
+### Step 10: Execute the Ansible playbook
+
+Execute:
+
+```bash
+ansible-playbook -i localhost, stack.yml --ask-become-pass
+```
+
+Enter your Ubuntu password when prompted.
+
+Ansible executes the following tasks:
+
+1. Installs Git.
+2. Installs PostgreSQL.
+3. Starts and enables PostgreSQL.
+4. Installs Apache.
+5. Starts and enables Apache.
+
+**Expected output:**
+
+```text
+PLAY [Configure Web Application Infrastructure]
+
+TASK [Gathering Facts]
+ok: [localhost]
+
+TASK [prerequisites : Install Git]
+ok: [localhost]
+
+TASK [postgresql : Install PostgreSQL]
+changed: [localhost]
+
+TASK [postgresql : Start and enable PostgreSQL]
+ok: [localhost]
+
+TASK [apache : Install Apache web server]
+ok: [localhost]
+
+TASK [apache : Start and enable Apache]
+ok: [localhost]
+
+PLAY RECAP
+localhost : ok=6 changed=1 unreachable=0 failed=0
+```
+
+The output may vary depending on previously installed packages.
+
+**Important:** The final output should show `failed=0`.
+
+### Step 11: Verify Git installation
+
+Execute:
+
+```bash
+git --version
+```
+
+Expected output:
+
+```text
+git version 2.x.x
+```
+
+### Step 12: Verify PostgreSQL installation
+
+Execute:
+
+```bash
+psql --version
+```
+
+Expected output:
+
+```text
+psql (PostgreSQL) 14.x
+```
+
+Check PostgreSQL service:
+
+```bash
+sudo systemctl status postgresql
+```
+
+Check the database cluster:
+
+```bash
+pg_lsclusters
+```
+
+The cluster status should show `online`.
+
+### Step 13: Verify Apache installation
+
+Execute:
+
+```bash
+apache2 -v
+```
+
+Expected output:
+
+```text
+Server version: Apache/2.4.x
+```
+
+Check Apache service:
+
+```bash
+sudo systemctl status apache2
+```
+
+Look for:
+
+```text
+Active: active (running)
+```
+
+Press `q` to exit the status screen.
+
+---
+
+## RESULT
+
+Thus, Ansible roles were successfully created and configured for Git, PostgreSQL and Apache. The main playbook `stack.yml` was created and executed successfully to automate the installation and configuration of all three software packages. Their successful installation was verified using the respective version commands.
+
+---
+
+# QUICK EXECUTION COMMANDS
+
+For convenience, here are all the commands in execution order.
+
+**1. Create project:**
+
+```bash
+mkdir -p ~/ansible-roles-lab
+cd ~/ansible-roles-lab
+mkdir roles
+cd roles
+```
+
+**2. Create roles:**
+
+```bash
+ansible-galaxy init prerequisites
+ansible-galaxy init postgresql
+ansible-galaxy init apache
+```
+
+**3. Edit prerequisites:**
+
+```bash
+nano ~/ansible-roles-lab/roles/prerequisites/tasks/main.yml
+```
+
+Paste the prerequisites YAML from Step 4.
+
+**4. Edit PostgreSQL:**
+
+```bash
+nano ~/ansible-roles-lab/roles/postgresql/tasks/main.yml
+```
+
+Paste the PostgreSQL YAML from Step 5.
+
+**5. Edit Apache:**
+
+```bash
+nano ~/ansible-roles-lab/roles/apache/tasks/main.yml
+```
+
+Paste the Apache YAML from Step 6.
+
+**6. Create main playbook:**
+
+```bash
+cd ~/ansible-roles-lab
+nano stack.yml
+```
+
+Paste the YAML from Step 7.
+
+**7. Check syntax:**
+
+```bash
+ansible-playbook -i localhost, stack.yml --syntax-check
+```
+
+**8. Execute playbook:**
+
+```bash
+ansible-playbook -i localhost, stack.yml --ask-become-pass
+```
+
+**9. Verify installations:**
+
+```bash
+git --version
+psql --version
+apache2 -v
+```
+
+### Important precautions
+
+1. Each `main.yml` file must have exactly one `---` at the beginning.
+2. Maintain the YAML indentation exactly as shown.
+3. Do not combine the contents of different files.
+4. Use lowercase role names consistently.
+5. Do not use `sudo` before `ansible-playbook`; the playbook already contains `become: true`.
+6. `update_cache: false` is used because your Ubuntu system previously encountered an Intel RealSense repository signing-key error.
+
+**All three `main.yml` files and the `stack.yml` playbook above are ready to copy and paste.**
