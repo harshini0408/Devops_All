@@ -1,0 +1,238 @@
+Yes! You can maintain **2 common Jenkins pipeline scripts and 1 common `pom.xml`** for all your CI and CD experiments.
+
+Here is the common structure.
+
+# 1. COMMON PROJECT STRUCTURE
+
+Create a Maven project in IntelliJ IDEA with JDK 17.
+
+```text
+Java-Project/
+│
+├── pom.xml
+│
+└── src/
+    ├── main/
+    │   └── java/
+    │       └── com/
+    │           └── example/
+    │               └── Main.java
+    │
+    └── test/
+        └── java/
+            └── com/
+                └── example/
+                    └── MainTest.java
+```
+
+# 2. COMMON Main.java
+
+Location: `src/main/java/com/example/Main.java`
+
+```java
+package com.example;
+
+public class Main {
+
+    public static int calculate(int a, int b) {
+        return a + b;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Result: " + calculate(10, 20));
+    }
+}
+```
+
+Replace the calculation with the respective experiment's logic.
+
+# 3. COMMON MainTest.java (CI)
+
+Location: `src/test/java/com/example/MainTest.java`
+
+```java
+package com.example;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class MainTest {
+
+    @Test
+    void testCalculation() {
+        assertEquals(30, Main.calculate(10, 20));
+    }
+}
+```
+
+For each CI experiment, modify the test cases according to the Java program.
+
+**Note:** CD experiments do not require test files, although you can retain them if using the same project structure.
+
+# 4. COMMON pom.xml (CI + CD)
+
+Use this for both types of experiments.
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>java-lab</artifactId>
+    <version>1.0</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.example.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+# 5. COMMON CI PIPELINE SCRIPT
+
+Use for CI experiments.
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'YOUR_GITHUB_REPOSITORY_URL'
+            }
+        }
+
+        stage('Build and Test') {
+            steps {
+                sh 'mvn clean test'
+            }
+        }
+    }
+}
+```
+
+# 6. COMMON CD PIPELINE SCRIPT
+
+Use for CD experiments.
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'YOUR_GITHUB_REPOSITORY_URL'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    mkdir -p deployment
+                    cp target/java-lab-1.0.jar deployment/
+                '''
+            }
+        }
+
+        stage('Execute') {
+            steps {
+                sh 'java -jar deployment/java-lab-1.0.jar 5'
+            }
+        }
+    }
+}
+```
+
+# 7. WHAT CHANGES FOR EACH EXPERIMENT?
+
+| Component | What to change |
+|---|---|
+| Main.java | Change Java program |
+| MainTest.java | Change test cases (CI) |
+| pom.xml | No change if project configuration remains same |
+| CI Pipeline | Only GitHub repository URL |
+| CD Pipeline | GitHub URL and execution arguments if required |
+
+# 8. COMMANDS TO REMEMBER
+
+```bash
+# Test CI project
+mvn clean test
+
+# Build CD project
+mvn clean package
+
+# GitHub upload
+git add .
+git commit -m "Updated project"
+git push origin main
+
+# Restart Jenkins
+sudo systemctl restart jenkins
+```
+
+**One important point:** Jenkins 2.580.2 requires Java 21 or newer to run, but your Maven projects can continue using Java 17.
+
+---
+
+### Final summary
+
+You only need to remember:
+
+1. One common Maven project structure.
+2. One common `pom.xml`.
+3. One CI pipeline script.
+4. One CD pipeline script.
+5. Change `Main.java` for each experiment.
+6. Change `MainTest.java` for CI experiments.
+7. Change GitHub URL and CD execution arguments when required.
+
+**Yes, that's essentially all.** You don't need to configure Jenkins from scratch for every experiment.
