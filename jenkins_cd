@@ -1,0 +1,306 @@
+# EXPERIMENT 15: JENKINS CONTINUOUS DELIVERY (CD) PIPELINE
+
+## 1. AIM
+To develop a Java application to display the multiplication table of an integer and configure a Jenkins CD pipeline to build, package, deploy and execute the JAR file.
+
+## 2. WHAT IS CD?
+
+Continuous Delivery automates the process of:
+1. **Checkout** – Get source code from GitHub.
+2. **Build** – Compile Java code.
+3. **Package** – Generate a JAR file.
+4. **Deploy** – Copy the JAR into a separate deployment folder.
+5. **Execute** – Run the deployed JAR.
+
+## 3. PROCEDURE
+
+### Step 1: Install packages
+
+```bash
+sudo apt update
+sudo apt install openjdk-17-jdk maven git -y
+```
+
+### Step 2: Create Maven Project
+
+In IntelliJ IDEA:
+
+- New Project → Maven
+- Project name: `CD-Demo`
+- JDK: 17
+
+### Step 3: Create Main.java
+
+Location: `src/main/java/com/example/Main.java`
+
+```java
+package com.example;
+
+public class Main {
+    public static void main(String[] args) {
+
+        int n = Integer.parseInt(args[0]);
+
+        for (int i = 1; i <= 10; i++) {
+            System.out.println(n + " x " + i + " = " + (n * i));
+        }
+    }
+}
+```
+
+### Step 4: Configure pom.xml
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>CD-Demo</artifactId>
+    <version>1.0</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.example.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+### Step 5: Test Maven Build
+
+```bash
+mvn clean package
+```
+
+Expected JAR:
+
+```text
+target/CD-Demo-1.0.jar
+```
+
+### Step 6: Upload to GitHub
+
+Create a repository named `CD-Demo`.
+
+Inside IntelliJ Terminal:
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/USERNAME/CD-Demo.git
+git push -u origin main
+```
+
+Replace `USERNAME` with your GitHub username.
+
+### Step 7: Create Jenkins Pipeline
+
+1. Open Jenkins: `http://localhost:8080`
+2. Click New Item.
+3. Enter `CD-Demo`.
+4. Select Pipeline.
+5. Click OK.
+6. Scroll to Pipeline.
+7. Select Pipeline script.
+
+### Step 8: Enter Jenkins Pipeline Script
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/USERNAME/CD-Demo.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    mkdir -p deployment
+                    cp target/*.jar deployment/
+                '''
+            }
+        }
+
+        stage('Execute') {
+            steps {
+                sh 'java -jar deployment/CD-Demo-1.0.jar 5'
+            }
+        }
+    }
+}
+```
+
+Replace `USERNAME` with your GitHub username.
+
+Click Save.
+
+### Step 9: Execute Pipeline
+
+1. Open CD-Demo.
+2. Click Build Now.
+3. Open the latest build.
+4. Click Console Output.
+
+Expected output:
+
+```text
+Checkout       SUCCESS
+Build          SUCCESS
+Deploy         SUCCESS
+Execute        SUCCESS
+
+5 x 1 = 5
+5 x 2 = 10
+5 x 3 = 15
+...
+5 x 10 = 50
+
+Finished: SUCCESS
+```
+
+### Step 10: Verify Deployment
+
+Open Jenkins → Latest Build → Workspace.
+
+You should see:
+
+```text
+CD-Demo/
+├── src/
+├── target/
+├── deployment/
+│   └── CD-Demo-1.0.jar
+└── pom.xml
+```
+
+---
+
+## 4. HOW TO MODIFY THE PIPELINE SCRIPT?
+
+For future experiments, you don't need to create a new pipeline script from scratch.
+
+Go to:
+
+**Jenkins → Existing Job → Configure → Pipeline**
+
+Modify the script and click Save.
+
+### Generic Pipeline Script
+
+Use this for all CD experiments:
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'YOUR_GITHUB_URL'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    mkdir -p deployment
+                    cp target/*.jar deployment/
+                '''
+            }
+        }
+
+        stage('Execute') {
+            steps {
+                sh 'java -jar deployment/APP-1.0.jar ARGUMENTS'
+            }
+        }
+    }
+}
+```
+
+Change only:
+- GitHub repository URL.
+- JAR filename, if different.
+- Execution arguments.
+
+## 5. OTHER CD EXPERIMENTS
+
+All four CD experiments follow the same procedure.
+
+| Experiment | Java application | Example input |
+|---|---|---|
+| 15 | Multiplication table | `5` |
+| 16 | Sum of five integers | `10 20 30 40 50` |
+| 17 | Largest of three numbers | `10 20 30` |
+| 18 | Celsius to Fahrenheit | `37` |
+
+For each experiment, replace `Main.java` with the respective program and modify the Execute stage.
+
+For example, Experiment 16:
+
+```groovy
+sh 'java -jar deployment/CD-Demo-1.0.jar 10 20 30 40 50'
+```
+
+Your Java code must read these values from `args[]`.
+
+---
+
+## 6. COMMON ERRORS
+
+| Error | Solution |
+|---|---|
+| `mvn: command not found` | `sudo apt install maven -y` |
+| JAR file not found | Run `mvn clean package` |
+| Main class not found | Check `mainClass` in pom.xml |
+| Git command error | Install Git plugin |
+| Repository not found | Check GitHub URL |
+| Permission denied | Check Jenkins workspace permissions |
+| No Pipeline option | Install Pipeline plugin |
+
+## RESULT
+
+Thus, a Jenkins Continuous Delivery pipeline was created to automatically retrieve source code from GitHub, build the Java application, package it into a JAR file, deploy it to a separate directory and execute the deployed application.
+
+**Remember:** Experiments 15–18 have the same CD procedure. Only the Java program and execution arguments change.
