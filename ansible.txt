@@ -1,0 +1,201 @@
+# Experiment 6 – Ansible Web Application Infrastructure (Ubuntu)
+
+### Step 1: Open Terminal
+
+Press `Ctrl + Alt + T`.
+
+### Step 2: Install Ansible
+
+```bash
+sudo apt update
+sudo apt install ansible -y
+```
+
+Verify:
+
+```bash
+ansible --version
+```
+
+### Step 3: Create the project directory
+
+Execute in the terminal:
+
+```bash
+mkdir -p ~/ansible-webapp
+cd ~/ansible-webapp
+```
+
+### Step 4: Create the playbook
+
+Execute inside `~/ansible-webapp/`:
+
+```bash
+nano webapp.yml
+```
+
+**File: `webapp.yml`**
+
+Paste:
+
+```yaml
+---
+- name: Deploy a Simple Web Application
+  hosts: localhost
+  connection: local
+  become: true
+
+  tasks:
+    - name: Install Apache web server
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+        update_cache: false
+
+    - name: Start and enable Apache
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: true
+
+    - name: Deploy the web application
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>My Ansible Web App</title>
+          </head>
+          <body>
+              <h1>Hello from Ansible!</h1>
+              <p>My web application was deployed automatically.</p>
+          </body>
+          </html>
+        mode: "0644"
+
+    - name: Verify the web application
+      ansible.builtin.uri:
+        url: http://127.0.0.1/
+        status_code: 200
+      register: web_result
+
+    - name: Display deployment status
+      ansible.builtin.debug:
+        msg: "Web application deployed successfully!"
+```
+
+Save: `Ctrl + O` → Enter → `Ctrl + X`.
+
+### Step 5: Verify the file
+
+Execute inside `~/ansible-webapp/`:
+
+```bash
+ls
+```
+
+Expected output:
+
+```text
+webapp.yml
+```
+
+### Step 6: Check playbook syntax
+
+Execute:
+
+```bash
+ansible-playbook webapp.yml --syntax-check
+```
+
+Expected output:
+
+```text
+playbook: webapp.yml
+```
+
+### Step 7: Execute the playbook
+
+Execute:
+
+```bash
+ansible-playbook webapp.yml --ask-become-pass
+```
+
+Enter your Ubuntu password when prompted.
+
+Expected final output:
+
+```text
+PLAY RECAP
+localhost : ok=6 changed=1 unreachable=0 failed=0
+```
+
+*The task status may vary depending on existing installations.*
+
+### Step 8: Verify Apache service
+
+Execute:
+
+```bash
+sudo systemctl status apache2
+```
+
+Check for:
+
+```text
+Active: active (running)
+```
+
+Press `q` to exit.
+
+### Step 9: Verify the webpage using curl
+
+Execute:
+
+```bash
+curl http://localhost
+```
+
+Expected output:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Ansible Web App</title>
+</head>
+<body>
+    <h1>Hello from Ansible!</h1>
+    <p>My web application was deployed automatically.</p>
+</body>
+</html>
+```
+
+### Step 10: Verify using Firefox
+
+1. Open Firefox.
+2. Enter:
+
+```text
+http://localhost
+```
+
+3. Press Enter.
+
+The webpage should display:
+
+**Hello from Ansible!**
+
+My web application was deployed automatically.
+
+---
+
+### RESULT
+
+Thus, an Ansible playbook was successfully created and executed on Ubuntu to install Apache, configure the web server, deploy an HTML webpage and verify its accessibility.
+
+---
+
+**Important:** Your Ansible installation and Apache installation are already completed from your previous execution. For repeating this experiment, start directly from Step 3. Pasted text(20261120-140706)
