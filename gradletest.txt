@@ -1,0 +1,361 @@
+Got it. You mean the **complete Experiment 7(b): Build a Simple Application using Gradle in IntelliJ IDEA, including Selenium testing and JAR packaging**.
+
+Below are the complete instructions using **IntelliJ IDEA, Java 17, Groovy DSL and `com.example`**.
+
+# Experiment 7(b): Build a Simple Application Using Gradle in IntelliJ IDEA
+
+## Aim
+To build a simple Java application using Gradle in IntelliJ IDEA, including Selenium testing and JAR packaging.
+
+## Step 1: Create a New Gradle Project
+
+1. Open IntelliJ IDEA.
+2. Click **New Project**.
+3. Select **Gradle**.
+4. Select **Java**.
+5. Set the following:
+
+| Setting | Value |
+|---|---|
+| Name | `SimpleInterest` |
+| Build system | Gradle |
+| Gradle DSL | Groovy |
+| JDK | 17 |
+| Group | `com.example` |
+
+6. Click **Create**.
+
+## Step 2: Configure build.gradle
+
+Open `build.gradle` and replace its contents with:
+
+```groovy
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.seleniumhq.selenium:selenium-java:4.34.0'
+    testImplementation 'org.testng:testng:7.10.2'
+}
+
+application {
+    mainClass = 'com.example.Main'
+}
+
+test {
+    useTestNG()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.example.Main'
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.named('run') {
+    standardInput = System.in
+}
+```
+
+Click **Load Gradle Changes** when IntelliJ prompts you.
+
+## Step 3: Create Main.java
+
+Navigate to:
+
+```text
+src
+ └── main
+     └── java
+         └── com.example
+             └── Main.java
+```
+
+If the package does not exist:
+
+1. Right-click `src/main/java`.
+2. Select **New → Package**.
+3. Enter `com.example`.
+4. Right-click the package → **New → Java Class**.
+5. Name it `Main`.
+
+Paste:
+
+```java
+package com.example;
+
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter Principal: ");
+        double p = sc.nextDouble();
+
+        System.out.print("Enter Rate: ");
+        double r = sc.nextDouble();
+
+        System.out.print("Enter Time: ");
+        double t = sc.nextDouble();
+
+        double si = (p * r * t) / 100;
+
+        System.out.println("Simple Interest: " + si);
+
+        sc.close();
+    }
+}
+```
+
+## Step 4: Create a TestNG Test Class
+
+Navigate to:
+
+```text
+src
+ └── test
+     └── java
+         └── com.example
+             └── MainTest.java
+```
+
+If the folders do not exist, create them.
+
+Paste this code:
+
+```java
+package com.example;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+public class MainTest {
+
+    @Test
+    public void testSimpleInterest() {
+        double p = 10000;
+        double r = 5;
+        double t = 2;
+
+        double result = (p * r * t) / 100;
+
+        Assert.assertEquals(result, 1000.0);
+    }
+
+    @Test
+    public void testZeroInterest() {
+        double result = (10000 * 0 * 2) / 100;
+
+        Assert.assertEquals(result, 0.0);
+    }
+
+    @Test
+    public void testDifferentValues() {
+        double result = (5000 * 10 * 3) / 100;
+
+        Assert.assertEquals(result, 1500.0);
+    }
+}
+```
+
+These tests verify the simple interest calculation for different inputs.
+
+## Step 5: Create the HTML Page
+
+1. Right-click the project root folder.
+2. Select **New → Directory**.
+3. Name it `docs`.
+4. Right-click `docs` → **New → HTML File**.
+5. Name it `index.html`.
+
+Paste:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Interest Application</title>
+</head>
+<body>
+    <h1>Simple Interest Application</h1>
+    <p>Built using Java and Gradle.</p>
+</body>
+</html>
+```
+
+## Step 6: Run the Application
+
+Open IntelliJ Terminal and execute:
+
+```bash
+./gradlew run
+```
+
+Enter:
+
+```text
+10000
+5
+2
+```
+
+Expected output:
+
+```text
+Enter Principal: 10000
+Enter Rate: 5
+Enter Time: 2
+Simple Interest: 1000.0
+```
+
+## Step 7: Run Test Cases
+
+Execute:
+
+```bash
+./gradlew test
+```
+
+Expected:
+
+```text
+BUILD SUCCESSFUL
+```
+
+To view the test report:
+
+```bash
+xdg-open build/reports/tests/test/index.html
+```
+
+The report displays the number of tests passed and failed.
+
+## Step 8: Build the Application
+
+Execute:
+
+```bash
+./gradlew build
+```
+
+Expected:
+
+```text
+BUILD SUCCESSFUL
+```
+
+## Step 9: Generate the JAR File
+
+Execute:
+
+```bash
+./gradlew jar
+```
+
+Expected:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Verify the generated JAR:
+
+```bash
+ls build/libs/
+```
+
+Expected:
+
+```text
+SimpleInterest.jar
+```
+
+Run the JAR:
+
+```bash
+java -jar build/libs/SimpleInterest.jar
+```
+
+## Step 10: Push the Project to GitHub
+
+Create a new repository on GitHub.
+
+In IntelliJ Terminal, execute:
+
+```bash
+git init
+git add .
+git status
+git commit -m "First commit"
+git branch -M main
+git remote add origin https://github.com/harshini0408/REPOSITORY_NAME.git
+git push -u origin main
+```
+
+Replace `REPOSITORY_NAME` with your actual repository name.
+
+If GitHub asks for a password, use a Personal Access Token (PAT), not your GitHub account password.
+
+## Step 11: Enable GitHub Pages
+
+1. Open your GitHub repository.
+2. Go to **Settings → Pages**.
+3. Under **Build and deployment**, select:
+   - Source: Deploy from a branch
+   - Branch: `main`
+   - Folder: `/docs`
+4. Click **Save**.
+
+Your static website will be hosted using GitHub Pages.
+
+---
+
+## Project Structure
+
+```text
+SimpleInterest/
+│
+├── build.gradle
+├── settings.gradle
+│
+├── src/
+│   ├── main/
+│   │   └── java/
+│   │       └── com/
+│   │           └── example/
+│   │               └── Main.java
+│   │
+│   └── test/
+│       └── java/
+│           └── com/
+│               └── example/
+│                   └── MainTest.java
+│
+├── docs/
+│   └── index.html
+│
+└── build/
+    ├── classes/
+    ├── reports/
+    └── libs/
+        └── SimpleInterest.jar
+```
+
+**Important:** The experiment manual includes Selenium and TestNG dependencies, but it does not provide a Selenium test program. The `MainTest.java` above uses TestNG to test the calculation logic; it does not automate a browser using Selenium.
+
+**Result:** Thus, a simple Java application was created using Gradle in IntelliJ IDEA, tested using TestNG, packaged as a JAR file and hosted using GitHub Pages. Devops_7_56.docx
