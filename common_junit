@@ -1,0 +1,88 @@
+Yes. For **Experiments 5–8**, you can use the same `pom.xml` and `azure-pipelines.yml` files. Only the Java program and JUnit test class need to change.
+
+## 1. Common `pom.xml`
+
+Use this for Experiment 5 and reuse it for Experiments 6, 7 and 8.
+
+**Filename:** `pom.xml`
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>CalculatorApp</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
+```
+
+For each experiment, you can keep the same `artifactId` if you use a separate project/repository. If you want distinct names, change only the `artifactId`.
+
+## 2. Common `azure-pipelines.yml`
+
+**Filename:** `azure-pipelines.yml`
+
+```yaml
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '17'
+    jdkArchitectureOption: 'x64'
+    goals: 'clean test'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    testRunTitle: 'JUnit Test Results'
+```
+
+## 3. What changes in each experiment?
+
+| Experiment | Java class | JUnit test class |
+|---|---|---|
+| 5 | `Calculator.java` | `CalculatorTest.java` |
+| 6 | `StudentResult.java` | `StudentResultTest.java` |
+| 7 | `LeapYear.java` | `LeapYearTest.java` |
+| 8 | `PurchaseCalculator.java` | `PurchaseCalculatorTest.java` |
+
+**For every experiment, follow this same sequence:**
+
+1. Create the Maven project.
+2. Add the common `pom.xml`.
+3. Create the Java class.
+4. Create the JUnit test class.
+5. Run `mvn clean test`.
+6. Create the common `azure-pipelines.yml`.
+7. Push to the respective GitHub repository.
+8. Create and run the Azure Pipeline.
+
+**You do not need to modify the Maven dependency or Azure YAML for Experiments 5–8.**
