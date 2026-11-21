@@ -1,0 +1,104 @@
+## 1. Common `pom.xml` for Questions 1–4
+
+Use this same file for all four experiments.
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>java-maven-app</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.example.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+**Changes required for each experiment:**
+
+| Question | artifactId |
+|---|---|
+| Q1 | java-maven-app |
+| Q2 | java-maven-app |
+| Q3 | java-maven-app |
+| Q4 | java-maven-app |
+
+**No changes required.** Keep the same `pom.xml` for all four experiments.
+
+---
+
+## 2. Common `azure-pipelines.yml` for Questions 1–4
+
+Use this same YAML file for all four experiments.
+
+```yaml
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '17'
+    jdkArchitectureOption: 'x64'
+    goals: 'clean package'
+    publishJUnitResults: false
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'target'
+    ArtifactName: 'Java-JAR'
+    publishLocation: 'Container'
+```
+
+**Changes required for each experiment:**
+
+| YAML field | Q1 | Q2 | Q3 | Q4 |
+|---|---|---|---|---|
+| trigger | main | main | main | main |
+| vmImage | ubuntu-latest | Same | Same | Same |
+| mavenPomFile | pom.xml | Same | Same | Same |
+| jdkVersionOption | 17 | Same | Same | Same |
+| goals | clean package | Same | Same | Same |
+| PathtoPublish | target | Same | Same | Same |
+| ArtifactName | Java-JAR | Same | Same | Same |
+
+**No changes required in the YAML file.**
+
+### Final conclusion
+
+For Questions 1–4:
+- Common `pom.xml` – Reuse as it is.
+- Common `azure-pipelines.yml` – Reuse as it is.
+- Only select the respective GitHub repository when creating each Azure Pipeline.
