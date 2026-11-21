@@ -1,0 +1,243 @@
+# Experiment 5: Java Calculator Using JUnit and Azure Pipeline
+
+**Aim:** To develop a Java calculator application, write JUnit test cases for all arithmetic operations, and configure an Azure Maven pipeline to run regression tests.
+
+## Step 1: Create Maven Project
+
+In IntelliJ IDEA:
+
+1. Select **New Project → Maven**.
+2. Project name: `CalculatorApp`
+3. JDK: `17`
+4. Package name: `com.example`
+5. Select **Create Git Repository**.
+6. Click **Create**.
+
+## Step 2: Add Common `pom.xml`
+
+Replace the contents of `pom.xml` with:
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>CalculatorApp</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
+```
+
+Click **Load Maven Changes**.
+
+## Step 3: Create Java Program
+
+Create `Calculator.java` inside:
+
+`src/main/java/com/example/`
+
+```java
+package com.example;
+
+public class Calculator {
+
+    public int add(int a, int b) {
+        return a + b;
+    }
+
+    public int subtract(int a, int b) {
+        return a - b;
+    }
+
+    public int multiply(int a, int b) {
+        return a * b;
+    }
+
+    public double divide(int a, int b) {
+        if (b == 0)
+            throw new IllegalArgumentException("Division by zero");
+        return (double) a / b;
+    }
+}
+```
+
+## Step 4: Create JUnit Test Class
+
+Create `CalculatorTest.java` inside:
+
+`src/test/java/com/example/`
+
+```java
+package com.example;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class CalculatorTest {
+
+    Calculator calc = new Calculator();
+
+    @Test
+    public void testAddition() {
+        assertEquals(15, calc.add(10, 5));
+    }
+
+    @Test
+    public void testSubtraction() {
+        assertEquals(5, calc.subtract(10, 5));
+    }
+
+    @Test
+    public void testMultiplication() {
+        assertEquals(50, calc.multiply(10, 5));
+    }
+
+    @Test
+    public void testDivision() {
+        assertEquals(2.0, calc.divide(10, 5), 0.001);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDivisionByZero() {
+        calc.divide(10, 0);
+    }
+}
+```
+
+## Step 5: Check Project Structure
+
+```text
+CalculatorApp/
+├── pom.xml
+└── src/
+    ├── main/
+    │   └── java/com/example/Calculator.java
+    └── test/
+        └── java/com/example/CalculatorTest.java
+```
+
+## Step 6: Run JUnit Tests Locally
+
+Open the terminal in the project directory.
+
+```bash
+mvn clean test
+```
+
+Expected output:
+
+```text
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+
+BUILD SUCCESS
+```
+
+## Step 7: Create Common `azure-pipelines.yml`
+
+Create `azure-pipelines.yml` in the project root directory.
+
+```yaml
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '17'
+    jdkArchitectureOption: 'x64'
+    goals: 'clean test'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    testRunTitle: 'JUnit Test Results'
+```
+
+## Step 8: Push Project to GitHub
+
+Create a GitHub repository named `CalculatorApp`.
+
+Run these commands from the project directory:
+
+```bash
+git add .
+git commit -m "JUnit Calculator Experiment"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/CalculatorApp.git
+git push -u origin main
+```
+
+If a remote is already configured, use `git remote set-url origin ...` instead of `git remote add origin`.
+
+## Step 9: Configure Azure Pipeline
+
+1. Open Azure DevOps.
+2. Select your existing project: `DevOps`.
+3. Go to **Pipelines → Pipelines**.
+4. Click **New Pipeline**.
+5. Select **GitHub**.
+6. Authorize your GitHub account.
+7. Select the `CalculatorApp` repository.
+8. Choose **Maven**.
+9. Replace the generated YAML with the code from Step 7.
+10. Click **Save and Run**.
+11. Check the pipeline execution.
+12. Open the **Tests** tab to view JUnit results.
+
+## Step 10: Verify Results
+
+Expected result:
+
+- Addition test – Passed
+- Subtraction test – Passed
+- Multiplication test – Passed
+- Division test – Passed
+- Division-by-zero test – Passed
+
+**Result:** The Java calculator application was successfully developed, tested using JUnit, and integrated with an Azure Maven pipeline.
+
+---
+
+### Commands Summary
+
+```bash
+# Check Java and Maven
+java -version
+mvn -version
+
+# Run JUnit tests
+mvn clean test
+
+# Git commands
+git add .
+git commit -m "JUnit Calculator Experiment"
+git branch -M main
+git push -u origin main
+```
+
+**For Experiments 6–8:** Reuse the same `pom.xml` and `azure-pipelines.yml`. Change only the Java program and its JUnit test class according to the experiment.
