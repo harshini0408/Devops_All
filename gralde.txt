@@ -1,0 +1,287 @@
+# Gradle Experiment – Building a Java Application and Generating a JAR File
+
+### AIM
+To develop a Java application using Gradle, configure the build script, compile the application and generate a JAR file.
+
+We will use **IntelliJ IDEA on Ubuntu**, without manually executing commands in the terminal.
+
+## Step 1: Create a Gradle Project
+
+1. Open IntelliJ IDEA.
+2. Select **New Project → Gradle**.
+3. Configure:
+
+| Setting | Value |
+|---|---|
+| Name | SimpleInterest |
+| Language | Java |
+| Build System | Gradle |
+| DSL | Groovy |
+| JDK | 17 |
+| Group ID | com.example |
+
+4. Click **Create**.
+
+## Step 2: Configure build.gradle
+
+Open `build.gradle` and paste the common JAR-only configuration:
+
+```groovy
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = 'com.example.Main'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.example.Main'
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.named('run') {
+    standardInput = System.in
+}
+```
+
+Save and click **Load Gradle Changes**.
+
+## Step 3: Create the Java Package
+
+Navigate to:
+
+```text
+src → main → java
+```
+
+1. Right-click `java`.
+2. Select New → Package.
+3. Enter:
+
+```text
+com.example
+```
+
+## Step 4: Create Main.java
+
+Right-click `com.example`.
+
+Select **New → Java Class**.
+
+Enter:
+
+```text
+Main
+```
+
+Paste this sample program for calculating simple interest:
+
+```java
+package com.example;
+
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter Principal: ");
+        double p = sc.nextDouble();
+
+        System.out.print("Enter Rate: ");
+        double r = sc.nextDouble();
+
+        System.out.print("Enter Time: ");
+        double t = sc.nextDouble();
+
+        double si = (p * r * t) / 100;
+
+        System.out.println("Simple Interest: " + si);
+
+        sc.close();
+    }
+}
+```
+
+## Step 5: Execute the Java Application
+
+### Option A: Using IntelliJ
+
+1. Open `Main.java`.
+2. Click the green Run button beside `main()`.
+3. Select Run Main.main().
+
+Enter:
+
+```text
+Enter Principal: 10000
+Enter Rate: 5
+Enter Time: 2
+```
+
+Expected output:
+
+```text
+Simple Interest: 1000.0
+```
+
+### Option B: Using Gradle
+
+In IntelliJ, open:
+
+**View → Tool Windows → Gradle**
+
+Navigate to:
+
+```text
+SimpleInterest
+  → Tasks
+    → application
+      → run
+```
+
+Double-click `run`.
+
+Enter the input values in the Run console if prompted.
+
+## Step 6: Build the Application
+
+In the Gradle window, navigate to:
+
+```text
+SimpleInterest
+  → Tasks
+    → build
+      → build
+```
+
+Double-click `build`.
+
+Expected:
+
+```text
+BUILD SUCCESSFUL
+```
+
+This compiles the Java application and generates the build artifacts.
+
+## Step 7: Generate the JAR File
+
+In the Gradle window, navigate to:
+
+```text
+SimpleInterest
+  → Tasks
+    → build
+      → jar
+```
+
+Double-click `jar`.
+
+Expected:
+
+```text
+BUILD SUCCESSFUL
+```
+
+## Step 8: Verify the JAR File
+
+In the Project panel, navigate to:
+
+```text
+SimpleInterest
+  → build
+    → libs
+      → SimpleInterest.jar
+```
+
+Your executable JAR file has been generated.
+
+## Step 9: Execute the JAR File
+
+You can execute the generated JAR through the Ubuntu terminal.
+
+Navigate to the project directory:
+
+```bash
+cd ~/IdeaProjects/SimpleInterest
+```
+
+Execute:
+
+```bash
+java -jar build/libs/SimpleInterest.jar
+```
+
+Enter:
+
+```text
+Enter Principal: 10000
+Enter Rate: 5
+Enter Time: 2
+```
+
+Expected output:
+
+```text
+Simple Interest: 1000.0
+```
+
+---
+
+## Final Project Structure
+
+```text
+SimpleInterest
+│
+├── src
+│   └── main
+│       └── java
+│           └── com.example
+│               └── Main.java
+│
+├── build
+│   ├── classes
+│   ├── libs
+│   │   └── SimpleInterest.jar
+│   └── reports
+│
+├── build.gradle
+├── settings.gradle
+├── gradlew
+└── gradlew.bat
+```
+
+## Important Commands – Quick Reference
+
+| Operation | Command |
+|---|---|
+| Check Java | `java -version` |
+| Check Gradle | `gradle --version` |
+| Run application | `gradle run` |
+| Build application | `gradle build` |
+| Generate JAR | `gradle jar` |
+| Execute JAR | `java -jar build/libs/SimpleInterest.jar` |
+| Clean build | `gradle clean` |
+
+*The Gradle tasks can also be executed directly from IntelliJ's Gradle window, without using the terminal.*
+
+## RESULT
+
+Thus, a Java application to calculate simple interest was successfully developed using Gradle. The application was compiled and packaged into an executable JAR file.
+
