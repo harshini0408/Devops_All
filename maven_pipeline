@@ -1,0 +1,354 @@
+# EXPERIMENT 1 – CREATE MAVEN BUILD PIPELINE IN AZURE
+
+### AIM
+To develop a Java application to read marks in three subjects, calculate the average and display the grade according to the following criteria:
+
+- A – 90 and above
+- B – 75–89
+- C – 50–74
+- F – Below 50
+
+To create a Maven project and configure an Azure Pipeline to compile the application and generate a JAR file.
+
+## STEP 1: Install Required Software
+
+Open Ubuntu Terminal.
+
+**Install Java 17**
+```bash
+sudo apt update
+sudo apt install openjdk-17-jdk -y
+java -version
+```
+
+**Install Maven**
+```bash
+sudo apt install maven -y
+mvn -version
+```
+
+**Install Git**
+```bash
+sudo apt install git -y
+git --version
+```
+
+## STEP 2: Create Maven Project
+
+1. Open IntelliJ IDEA.
+2. Click New Project.
+3. Enter project name: `java-maven-app`.
+4. Select:
+   - Language: Java
+   - Build System: Maven
+   - JDK: 17
+5. Select Create Git Repository.
+6. Click Create.
+
+## STEP 3: Configure pom.xml
+
+Open `pom.xml` and replace its contents with:
+
+**pom.xml**
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>java-maven-app</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.example.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+Save and reload Maven.
+
+## STEP 4: Create Package and Java Class
+
+**1. Create package**
+
+- Navigate to `src → main → java`.
+- Right-click java → New → Package.
+- Enter:
+
+```text
+org.example
+```
+
+**2. Create Java class**
+
+- Right-click `org.example`.
+- Select New → Java Class.
+- Enter:
+
+```text
+Main
+```
+
+**3. Write Java code**
+
+Paste into `Main.java`:
+
+```java
+package org.example;
+
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter marks in Subject 1: ");
+        double m1 = sc.nextDouble();
+
+        System.out.print("Enter marks in Subject 2: ");
+        double m2 = sc.nextDouble();
+
+        System.out.print("Enter marks in Subject 3: ");
+        double m3 = sc.nextDouble();
+
+        double average = (m1 + m2 + m3) / 3;
+
+        char grade;
+
+        if (average >= 90)
+            grade = 'A';
+        else if (average >= 75)
+            grade = 'B';
+        else if (average >= 50)
+            grade = 'C';
+        else
+            grade = 'F';
+
+        System.out.printf("Average: %.2f%n", average);
+        System.out.println("Grade: " + grade);
+
+        sc.close();
+    }
+}
+```
+
+## STEP 5: Check Project Structure
+
+```text
+java-maven-app
+│
+├── src
+│   └── main
+│       └── java
+│           └── org.example
+│               └── Main.java
+│
+└── pom.xml
+```
+
+## STEP 6: Compile and Generate JAR
+
+Open IntelliJ Terminal (`Alt + F12`).
+
+Navigate to the project:
+
+```bash
+cd ~/IdeaProjects/java-maven-app
+```
+
+**Compile:**
+
+```bash
+mvn compile
+```
+
+**Generate JAR:**
+
+```bash
+mvn clean package
+```
+
+**Verify JAR:**
+
+```bash
+ls target/
+```
+
+Expected file:
+
+```text
+java-maven-app-1.0-SNAPSHOT.jar
+```
+
+**Execute JAR:**
+
+```bash
+java -jar target/java-maven-app-1.0-SNAPSHOT.jar
+```
+
+Sample output:
+
+```text
+Enter marks in Subject 1: 95
+Enter marks in Subject 2: 90
+Enter marks in Subject 3: 85
+
+Average: 90.00
+Grade: A
+```
+
+## STEP 7: Create GitHub Repository
+
+1. Open [GitHub](https://github.com?utm_source=chatgpt.com).
+2. Click New Repository.
+3. Repository name:
+
+```text
+java-maven-app
+```
+
+4. Select Private.
+5. Click Create Repository.
+
+## STEP 8: Push Project to GitHub
+
+Open IntelliJ Terminal inside the project directory.
+
+Configure Git:
+
+```bash
+git config --global user.name "YourName"
+git config --global user.email "your@email.com"
+```
+
+Execute:
+
+```bash
+git init
+git add .
+git commit -m "Initial Commit"
+git branch -M main
+```
+
+Connect GitHub:
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/java-maven-app.git
+```
+
+Push:
+
+```bash
+git push -u origin main
+```
+
+Enter your GitHub username and PAT if prompted.
+
+## STEP 9: Create Azure Pipeline
+
+1. Open [Azure DevOps](https://dev.azure.com?utm_source=chatgpt.com).
+2. Open your organization.
+3. Select your existing project `DevOps`.
+4. Click Pipelines → Pipelines.
+5. Click New Pipeline.
+6. Select GitHub.
+7. Authorize GitHub if prompted.
+8. Select repository `java-maven-app`.
+9. Approve and install permissions if requested.
+10. Select Maven.
+
+## STEP 10: Configure azure-pipelines.yml
+
+Replace the generated YAML file with:
+
+**azure-pipelines.yml**
+
+```yaml
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '17'
+    jdkArchitectureOption: 'x64'
+    goals: 'clean package'
+    publishJUnitResults: false
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'target'
+    ArtifactName: 'Java-JAR'
+    publishLocation: 'Container'
+```
+
+Click Save and Run.
+
+## STEP 11: Verify Pipeline
+
+1. Open Pipelines.
+2. Select `java-maven-app`.
+3. Open the latest pipeline run.
+4. Wait for execution.
+
+Expected output:
+
+```text
+Checkout             SUCCESS
+Maven Build          SUCCESS
+Publish Artifacts    SUCCESS
+```
+
+## STEP 12: Download JAR from Azure
+
+1. Open the successful pipeline run.
+2. Navigate to Artifacts.
+3. Select `Java-JAR`.
+4. Download the artifact.
+5. Extract and verify the JAR file.
+
+Expected:
+
+```text
+java-maven-app-1.0-SNAPSHOT.jar
+```
+
+## RESULT
+
+Thus, a Java application was successfully developed to calculate the average marks and display the corresponding grade. A Maven project was created, and an Azure Pipeline was configured to compile the application and generate the JAR artifact.
+
+---
+
+**For Questions 2, 3 and 4:** Keep the same project name `java-maven-app`, repository name, `pom.xml`, package, class name and Azure YAML. Only replace the Java code in `Main.java` according to the respective question.
