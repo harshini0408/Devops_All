@@ -1,0 +1,96 @@
+## 1. Common build.gradle – JAR Generation Only
+
+Use this when the experiment requires building the Java application and generating a JAR file without test cases.
+
+```groovy
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = 'com.example.Main'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.example.Main'
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.named('run') {
+    standardInput = System.in
+}
+```
+
+**Tasks performed:**
+- Compile Java application.
+- Run Java application.
+- Generate JAR file.
+- Execute the generated JAR.
+
+---
+
+## 2. Common build.gradle – With TestNG Testing
+
+Use this when the experiment requires Java application building, testing and JAR generation.
+
+```groovy
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.testng:testng:7.10.2'
+    testImplementation 'org.seleniumhq.selenium:selenium-java:4.34.0'
+}
+
+application {
+    mainClass = 'com.example.Main'
+}
+
+test {
+    useTestNG()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.example.Main'
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.named('run') {
+    standardInput = System.in
+}
+```
+
+**Tasks performed:**
+- Compile Java application.
+- Run Java application.
+- Execute TestNG test cases.
+- Generate JAR file.
+- Execute the generated JAR.
+
+---
+
